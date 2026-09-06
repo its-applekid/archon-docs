@@ -1,0 +1,271 @@
+{
+  "docId": "3c7f1a",
+  "instance": "how-archon-works",
+  "commit": "",
+  "blocks": {
+    "afe36b790": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "h2",
+      "hash": "f7ab9f3d963a822ecbaadc53785611468ca82d333d69e402d93adb2c43a55e7c"
+    },
+    "aed46488f": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "p",
+      "hash": "137e86016de74e2a861319686945cfe28c2387e59a47bf323236e20b31d4bbf0"
+    },
+    "a8229ff6f": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "h4",
+      "hash": "393c7d9a6e59af8fb89ad164fac9bc33a8ee4ec9cf81fe95cdfce77dcc0edbc2"
+    },
+    "af160c173": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "p",
+      "hash": "7f0e2412f7c0cc1dfd0a93de61348c890f058452b12c278d243891e6057efa06"
+    },
+    "a661f1b5a": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "h4",
+      "hash": "c0186b384e42a35ed6685f48c02791ee4d4347f88c314c209397d094c21c0a08"
+    },
+    "a320cfaec": {
+      "file": "sections/01-problem.html",
+      "section": "problem",
+      "tag": "h2",
+      "hash": "0892f460466965e5bddfcecd3629f5062886e8695f400a2da9ae8b84691d2761"
+    },
+    "a991d4dd0": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "h3",
+      "hash": "65a479fe0409a193d83abbbd8d0065ef2b6aa6f971eeb0831f67380ae386e62f"
+    },
+    "a30cceaab": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "h2",
+      "hash": "7ec0b8fa270c8e39eb3bce9317bb59d881e0f14f905708eda73a26c60e92bc1a"
+    },
+    "a1cea2144": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "h2",
+      "hash": "657e273b18c704a912b791929ade3440fcf27408ef7565da354b73cd150e1db2"
+    },
+    "aa0e7f051": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "h4",
+      "hash": "785cc7b0c184baedd5d65168722c88b248c8243ae3080cff3678bf984e41f260"
+    },
+    "ab23d454c": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "p",
+      "hash": "236d7a908fdbcdbc9a1be50c15e7e044a34511b4019cded2e1ff17dca56be36b"
+    },
+    "aa4459baa": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "h4",
+      "hash": "73e56353583733416d78ad059fa80bdc96834d276dc5eda17bf8440fc557178f"
+    },
+    "ab9bebbd4": {
+      "file": "sections/02-solution.html",
+      "section": "solution",
+      "tag": "p",
+      "hash": "dbd6f8329146354b19d7aaa4091da8a1a6780534bbd62e3ab0aa2d47b0063dc8"
+    },
+    "a811ed8e4": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h3",
+      "hash": "16bbfaae5a4599fb513894c841f2801558c36151b973305782e1c4f48f7ba72e"
+    },
+    "a7f0290a8": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "p",
+      "hash": "1c09ebd7772ee2baebac7d2e33769ba817a9dc16cbb22d8b11870318e2b65291"
+    },
+    "afb7f779e": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h2",
+      "hash": "cb3b43076a1085a03ced1090f96825ae8b83c1daacbb5412b8ddf25c68ac6e82"
+    },
+    "ab75f7eb5": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "p",
+      "hash": "36689e50fd06a9c213054706d36d6e29775d13923522f920bcdeb497d5ea8d62"
+    },
+    "a6340b3cd": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h2",
+      "hash": "51a5ca9b0e2db6a6fefc4fa932a0c6ae442329410497e9cb098badec038167b1"
+    },
+    "ab9ed87fa": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "p",
+      "hash": "b76a056f75865408ebc71a1451a87fbc392d507847a710be1c98cb063f30b79f"
+    },
+    "acb317af6": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h2",
+      "hash": "1df617463065aa7b00c1d2c13b509537b01e8095459b52ff5ecec82409e84c0e"
+    },
+    "a29acac3f": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h2",
+      "hash": "06eaa32df2723e0b625b8dcbbf537de7282b871769835259560b01e5696e4871"
+    },
+    "a7a078d53": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h4",
+      "hash": "37df49636a529036d0165dd988b6c93dc070250547127712b75e44c980cdf89f"
+    },
+    "a84d0ff65": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "p",
+      "hash": "118069a75dcd910990de8d4922d379a2e477fbe1a374ed24a5b761ba3ba9e5e4"
+    },
+    "a06b2be67": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "h4",
+      "hash": "d57856ef29b40dfd193d9eddf1a681ac8e6d0c4becd18c91216e9b3a052d0bfc"
+    },
+    "a0779ead9": {
+      "file": "sections/03-design.html",
+      "section": "design",
+      "tag": "p",
+      "hash": "8691c72b096ebdd5498d918850e79ed302559dab43b6ae209dee327980861db0"
+    },
+    "aa07138f0": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "h3",
+      "hash": "e069ac0fae54175354da11e2a90ed0c0b565589ba9246b88d696d522be01b46a"
+    },
+    "ac10b7f25": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "p",
+      "hash": "149836be7ab6be6735dee0677a33ed069e41839024037950528b2fdcb31a02c7"
+    },
+    "ae7948f2c": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "h2",
+      "hash": "4cf714995232c0d3b49e25b14490bc40c6c144691e2a0bec4d7814e66573a3de"
+    },
+    "ad2f8b63b": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "h2",
+      "hash": "d41d1679bb26842a63df0f0c2e12aeaf013f155d0327881ea07927b490c6c061"
+    },
+    "a13dbe675": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "h2",
+      "hash": "38c87144974cfaaddb5d78b16864b43e342ab60cb36f58e5d85815eda9f82f3d"
+    },
+    "aad99146f": {
+      "file": "sections/04-api.html",
+      "section": "api",
+      "tag": "p",
+      "hash": "c8277c75f0a87b27d381975f7d798cb80b6cb70c34bf6465a4fddb356cedb7f7"
+    },
+    "a6489cf5e": {
+      "file": "sections/05-build-order.html",
+      "section": "build-order",
+      "tag": "h3",
+      "hash": "c21b0c0bb30a8b815b6e3644851463626ff3312f3f2d9f968bccf7c166c206ca"
+    },
+    "a14e2329a": {
+      "file": "sections/05-build-order.html",
+      "section": "build-order",
+      "tag": "h2",
+      "hash": "a7323ae7963bb2e6543e6cf8f28fe5558f136e6e3b5fe45c076fbe4f5d05bf4e"
+    },
+    "a472f3c3b": {
+      "file": "sections/05-build-order.html",
+      "section": "build-order",
+      "tag": "h2",
+      "hash": "1de43e539ab1015f04a9742e908e60005daf24e5c87a11186590bde4b11e68fe"
+    },
+    "a1fa1c47e": {
+      "file": "sections/05-build-order.html",
+      "section": "build-order",
+      "tag": "h2",
+      "hash": "c6f3b8a7efddb0bb4806a32d9cdf138046b26edd3d3ea9098a4727c63f0d767c"
+    },
+    "a4d332817": {
+      "file": "sections/05-build-order.html",
+      "section": "build-order",
+      "tag": "p",
+      "hash": "46a66f672c431c993aca56b15baf94530f5d3fb28a024df6fc70ea880166ff60"
+    },
+    "af30a3eb5": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h2",
+      "hash": "5e0a96ef86c219c391afd5f0a25827cf8813194caf8e2753aff31c4213879415"
+    },
+    "ab3bdf071": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "p",
+      "hash": "9e6faa262ee533ce95862f0085f9b23d582dcb9459ea0e9baad2b520addea82e"
+    },
+    "a292015f4": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h4",
+      "hash": "6e005b3f87594234036924c81e917d47ddee986f4d26490521350568ba50fe2b"
+    },
+    "ab4749acb": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h4",
+      "hash": "012b245da7f6c9f9908bc604cbda02f8a8c85784cb9cf38e14c5e87d16b1513c"
+    },
+    "a889fa8ac": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h4",
+      "hash": "c71bb2518750708f706005cff169b2f6e594f906102f3358ffdd682e2bf7633c"
+    },
+    "ab58dcdff": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h4",
+      "hash": "32910a5b5c22d98d099467d30cdb396336390155154ddedc9ece583aa3d29df9"
+    },
+    "a270035d8": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h4",
+      "hash": "5e83bc51d6ad2ff79a5ccf42deff2da713c1b93ac6f916185716ce74192e91b3"
+    },
+    "aec903f93": {
+      "file": "sections/06-open-questions.html",
+      "section": "open-questions",
+      "tag": "h2",
+      "hash": "bcfaa0c1ecbd31365971441c15163bf66cf372da709668b545f364d58be712ca"
+    }
+  }
+}

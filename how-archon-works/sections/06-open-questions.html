@@ -1,0 +1,136 @@
+<!--
+id: open-questions
+label: Open questions
+summary: Five unresolved questions, ranked by how much the answer would change the design. The first one decides whether Archon can be offered as a service at all.
+nav: Open questions
+-->
+<!-- peek -->
+<div class="verdicts">
+  <div class="vc"><span class="tag risk">Load-bearing</span><h4>Hosting without a customer's token</h4><p>No answer means no hosted offering, only self-hosting.</p></div>
+  <div class="vc"><span class="tag warn">Changes the storage model</span><h4>Where comments live</h4><p>Repository, host, or GitHub's own threads. Three different products.</p></div>
+  <div class="vc"><span class="tag warn">Unmeasured</span><h4>Browser-side rate limits</h4><p>Moving reads to the client trades one ceiling for another.</p></div>
+</div>
+<!-- body -->
+
+<h2>Open questions</h2>
+
+<p>Each of these is a decision that is not the author's to make alone, written so a reader can answer one
+without reading the rest of the document. They are ranked by how much the answer changes the design, not
+by how hard they are.</p>
+
+<div class="qs">
+  <div class="q">
+    <span class="num">1</span>
+    <div>
+      <h4>How can a hosted Archon write to a customer's repository without holding a credential for it?</h4>
+      <p>This is the load-bearing one, so it is first. Repository mode works today because
+      <code>DOCS_GITHUB_TOKEN</code> is a site environment variable on a site the document's own team
+      controls. <b>Self-hosting has no problem here.</b> A hosted offering does: the host would hold a
+      token that can write to every customer's repository, which is the single most attractive credential
+      in the system and the one whose compromise is unrecoverable.</p>
+      <p>Three shapes exist and none is obviously right. A <b>GitHub App</b> with a fine-grained
+      installation, scoped to contents and pull requests on selected repositories, is the conventional
+      answer &mdash; but the host still mints tokens, so it is a smaller blast radius rather than a
+      different trust model. A <b>customer-side runner</b> that polls the host for approved edits and
+      commits them locally moves the credential entirely to the customer, and costs a component they must
+      operate. <b>Browser-side commits</b> using the reader's own GitHub OAuth grant means the host never
+      holds a write credential at all, and means every editor needs push access, which most reviewers do
+      not have and should not be given.</p>
+      <p><b>What changes on the answer:</b> the second option makes hosting a hybrid product with an
+      installed component; the third makes the role model in the API section partly redundant, because
+      GitHub's permissions would decide who may edit. Only the first leaves the design as documented.</p>
+    </div>
+  </div>
+  <div class="q">
+    <span class="num">2</span>
+    <div>
+      <h4>Should comments live in the repository, on a host, or in GitHub's own comment system?</h4>
+      <p>They live on a host today, in Blobs, and that choice was made against a specific alternative &mdash;
+      authority in a committed file &mdash; for a specific reason: an invitation must be immediate, and in
+      standalone mode there is no repository to commit to. That reasoning is sound for <em>grants</em>. It
+      is weaker for <em>comments</em>, which do not need to be immediate in the same way.</p>
+      <p><b>In the repository</b>, comments would diff, review and survive the host disappearing, and the
+      anchor churn would be visible next to the text change that caused it &mdash; which is already true
+      of <code>anchors.json</code>. It also means every comment is a commit, which is unbearable during a
+      live review, and it means a reader who may comment must be able to write to the repository, which
+      re-opens question 1 in a worse form. <b>In GitHub's own review threads</b>, the comments would live
+      where engineers already read them, with notifications and permissions solved. But GitHub anchors to
+      a line in a diff, and this design exists precisely because a line number is the anchor that does not
+      survive an edit. A pull request comment also disappears from view once the pull request merges,
+      which is the moment a design comment becomes most worth keeping.</p>
+      <p><b>What changes on the answer:</b> the repository option deletes the threads half of the storage
+      layer and most of phase 3. The GitHub option deletes it too and replaces the anchor model with
+      GitHub's, which this document argues against on the merits. <b>Assumed answer: keep them on the
+      host</b>, and treat the durability gap honestly &mdash; if Blobs were lost, no published word would
+      be lost, but every comment would be.</p>
+    </div>
+  </div>
+  <div class="q">
+    <span class="num">3</span>
+    <div>
+      <h4>What is the rate-limit ceiling if every reader's browser talks to the GitHub API directly?</h4>
+      <p>This follows from question 1's third option and is worth pricing separately. Today, reads never
+      reach GitHub at all: the document is a static file and the manifest is baked into the deploy, so a
+      hundred readers cost GitHub nothing. Moving writes &mdash; or worse, base-text reads &mdash; into the
+      browser changes that.</p>
+      <p><b>Unverified.</b> The numbers are not measured here and should not be quoted from memory.
+      What is measurable and known is the shape of the exposure: an authenticated per-user hourly quota is
+      spent per <em>reader</em> rather than per site, so it scales with audience rather than with edits,
+      and a document open in twenty tabs would spend it on nothing. A secondary limit on concurrent
+      requests would bite first during exactly the event this platform is built for &mdash; a live review
+      where thirty people load the same page at once.</p>
+      <p><b>What changes on the answer:</b> if per-reader quota is comfortable, browser-side commits become
+      viable and question 1 has a clean answer. If it is not, the host must proxy, and proxying means
+      holding a credential, which returns to question 1's first option. <b>These two questions are one
+      question and should be decided together.</b></p>
+    </div>
+  </div>
+  <div class="q">
+    <span class="num">4</span>
+    <div>
+      <h4>What happens at 200 concurrent readers?</h4>
+      <p>Realtime runs on a broker's free tier, and the binding constraint is <b>200 concurrent
+      connections, account-wide rather than per document</b>. Message volume is not the constraint: a
+      ten-reader hour is roughly 18,000 messages against a six-million monthly allowance. Connections are.
+      Two hundred people reading documents at the same moment is about twenty busy documents, or one
+      all-hands document.</p>
+      <p>Two paths are already framed: pay, or migrate to the named target, which is one client module and
+      no data migration because presence is never persisted and events carry only ids and hashes.
+      <b>The free tier carries no service level agreement</b>, and the mitigation is structural rather
+      than contractual &mdash; no write path may depend on the broker, so an outage is a slower document.
+      What is genuinely open is <em>when</em> to move, and whether the first sign of the ceiling will be
+      visible or will look like presence quietly not working for the twenty-first person.</p>
+    </div>
+  </div>
+  <div class="q">
+    <span class="num">5</span>
+    <div>
+      <h4>Who reviews a document an agent wrote in an afternoon?</h4>
+      <p>The Problem section rests on authoring becoming cheap, and this is the bill for that. A build
+      failure catches an unbalanced tag, a duplicate section id, an unfilled placeholder and an orphaned
+      anchor. <b>Nothing catches a confident sentence that is wrong.</b> An interactive element that
+      renders correctly and models the system incorrectly is worse than prose, because it looks like
+      evidence.</p>
+      <p><b>What changes on the answer:</b> nothing in the architecture, which is why this is last rather
+      than first. But it is the question a reader should leave with, because it is the only one on this
+      list that the design cannot answer &mdash; and the comment and suggestion layer this document
+      describes is, at bottom, the proposed answer to it.</p>
+    </div>
+  </div>
+</div>
+
+<h2>What is deliberately not being built</h2>
+
+<ul>
+  <li><b>A second identity vendor.</b> No GitHub OAuth, no Auth0, no single sign-on and no multi-factor
+  authentication. If an organisation mandates either of the last two, this design is replaced rather than
+  extended.</li>
+  <li><b>Cross-document features.</b> No "shared with me" list, no cross-document revoke, no unread
+  count and no full-text search of comment bodies. The storage decision rules these out, and they were cut
+  deliberately rather than deferred.</li>
+  <li><b>A diagram library.</b> It renders one fixed theme, cannot be checked before publishing, and needs
+  a script the CSP blocks. Diagrams are hand-built from the template's components.</li>
+  <li><b>Conflict-free merging of two edits to one block.</b> Two people editing the same block is a
+  genuine conflict and the second writer is told. Merging the text would be the fix that hides the
+  problem.</li>
+</ul>

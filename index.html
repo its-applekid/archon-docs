@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archon — Always-on Architecture Docs</title>
+<meta name="description" content="Always-on Architecture Docs. One self-contained HTML page that gains sign-in, anchored comments and inline edits when it is hosted.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Light is the bare :root so no colour exists only inside a media block. */
+  :root {
+    --bg: #e7d6b2;
+    --fg: #2a2520;
+    --muted: #5f5645;
+    --accent: #1f57c4;
+    --hairline: rgba(42, 37, 26, 0.12);
+    --pill-bd: rgba(42, 37, 26, 0.16);
+    --pill-bg: rgba(42, 37, 26, 0.035);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1b1e;
+      --fg: #edeef0;
+      --muted: #8c8d93;
+      --accent: #2f86ff;
+      --hairline: rgba(221, 226, 235, 0.10);
+      --pill-bd: rgba(221, 226, 235, 0.13);
+      --pill-bg: rgba(221, 226, 235, 0.03);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(28px, 8vh, 72px) clamp(20px, 6vw, 56px);
+    text-align: center;
+  }
+
+  .wordmark {
+    font-family: "Bungee", "Space Grotesk", system-ui, sans-serif;
+    font-size: clamp(38px, 9vw, 92px);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    color: var(--fg);
+  }
+
+  .tagline {
+    margin-top: clamp(16px, 3vh, 26px);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: clamp(13px, 2vw, 18px);
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    color: var(--muted);
+  }
+
+  .rule {
+    width: min(420px, 62%);
+    height: 1px;
+    margin: clamp(30px, 6vh, 54px) 0;
+    background: var(--hairline);
+  }
+
+  .what {
+    max-width: 34ch;
+    text-wrap: balance;
+    font-size: clamp(18px, 2.7vw, 25px);
+    font-weight: 500;
+    line-height: 1.42;
+    letter-spacing: -0.012em;
+    color: var(--fg);
+  }
+  .what .hl { color: var(--accent); }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: clamp(30px, 6vh, 52px);
+    padding: 13px 20px 13px 24px;
+    border: 1px solid var(--pill-bd);
+    border-radius: 11px;
+    background: var(--pill-bg);
+    color: var(--fg);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: clamp(13px, 1.8vw, 15px);
+    text-decoration: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .cta:hover {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+  }
+  .cta svg {
+    width: 15px;
+    height: 15px;
+    color: var(--accent);
+    transition: transform 0.2s ease;
+  }
+  .cta:hover svg { transform: translateX(3px); }
+  .cta:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .aside {
+    margin-top: clamp(22px, 4vh, 34px);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: color-mix(in srgb, var(--muted) 78%, transparent);
+  }
+  .aside a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .aside a:hover { color: var(--fg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta, .cta svg { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <h1 class="wordmark">ARCHON</h1>
+  <p class="tagline">Always-on Architecture Docs</p>
+
+  <div class="rule" role="presentation"></div>
+
+  <p class="what">An architecture document that ships as <span class="hl">one HTML file</span> and gains
+  sign-in, comments and inline edits the moment it is hosted.</p>
+
+  <a class="cta" href="/how-archon-works/">
+    Read the example document
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+  </a>
+
+  <p class="aside">built with <a href="https://github.com/aiur-team/archon">aiur-team/archon</a></p>
+</body>
+</html>

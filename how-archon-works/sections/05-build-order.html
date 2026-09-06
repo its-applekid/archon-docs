@@ -1,0 +1,109 @@
+<!--
+id: build-order
+label: Build order
+summary: Forty-two written specifications across four phases, sequenced so that two tickets in one phase never touch the same file. The constraint that shaped the plan was file collision, not feature dependency.
+nav: Build order
+-->
+<!-- peek -->
+<div class="phases">
+  <div class="ph done"><b>Phase 1</b><span class="cnt">5</span><span class="pt">Ids, placeholders, identity contract, the anchor scanner, Netlify. Nothing user-facing</span></div>
+  <div class="ph done"><b>Phase 2</b><span class="cnt">8</span><span class="pt">Gate, store helper, session probe, editable blocks, history, access library</span></div>
+  <div class="ph done"><b>Phase 3</b><span class="cnt">10</span><span class="pt">Every read path. A reader sees everything and can write nothing</span></div>
+  <div class="ph"><b>Phase 4</b><span class="cnt">19</span><span class="pt">Write paths and the sharp edges. Sequenced, not parallel</span></div>
+</div>
+<!-- body -->
+
+<div class="thesis">
+  <h3>The phases are not feature tiers. They are the shape of a file-collision graph.</h3>
+  <p>The rule that produced this plan is one line: <b>two tickets in the same phase never touch the same
+  file.</b> Phase 1 is not "foundations" in the vague sense &mdash; it is the set of edits to shared
+  files, done once, so that eight later lanes can run at the same time without merging into each other.
+  Phase 4 is nineteen tickets and mostly sequential for the same reason, from the other direction: the
+  write paths all converge on <code>edit.mjs</code> and <code>gitedit.mjs</code>.</p>
+</div>
+
+<h2>Each ticket is written before its code, and names its file surface</h2>
+
+<p>The forty-two specifications live in <code>docs/tickets/</code> as <code>P1-A</code> through
+<code>P4-T</code>. Each one declares what it changes, what it depends on, and how it is verified.
+Above them sits <code>docs/research/00-integration-plan.md</code>, which <b>rules</b>: nine research
+documents were written in parallel, they agreed on the large facts and disagreed on twenty-six concrete
+points, and the plan lists every disagreement with the ruling and the reason. Where the plan and a
+research document differ, the plan is correct.</p>
+
+<p class="note"><b>"Frozen" would be the wrong word, and the record says so.</b> Specifications freeze
+<em>contracts between tickets</em> &mdash; a session projection, an event shape, a client surface &mdash;
+so a downstream ticket cannot renegotiate them. The plan itself was revised twice and says where.
+Ruling&nbsp;#10, "there is no <code>editor</code> role", was reopened when a share panel became a
+requirement. <b>P4-E was retired outright</b>: a bearer share link cannot attribute a comment, because a
+stored comment needs a proven subject, and it cannot be revoked. The letter gap between P4-D and P4-F is
+that decision, left visible.</p>
+
+<h2>Four phases, and what a reader has at the end of each</h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Phase</th><th class="n">Tickets</th><th>What lands</th><th>What a reader can do</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill ok">1</span></td><td class="n">5</td><td>Permanent <code>id</code>/<code>slug</code>/<code>aliases</code>; every placeholder and hook call site in the builder; the identity contract; <code>anchors.ts</code> with its report; Netlify configuration and the <code>--site</code> build</td><td><b>Nothing new.</b> The rebuild is byte-identical except the doc-id meta line</td></tr>
+    <tr><td><span class="pill ok">2</span></td><td class="n">8</td><td>Edge gate, login and logout; the Blobs store helper; the session probe and reveal rules; editable-block detection and the edit manifest; <code>history.json</code>; the realtime token endpoint; the access library; identity split from authorisation</td><td>Sign in and read a gated document. No comment or edit UI exists</td></tr>
+    <tr><td><span class="pill warn">3</span></td><td class="n">10</td><td>Threads and events APIs; the comments client with four anchor states; the changelog; <code>GET /api/pending</code>; realtime transport; presence; <code>/api/access</code> and a doc-scoped session; the read-only share panel; the gate learns the grant store</td><td><b>See everything, write nothing.</b> Comments, history, who is online, who has access</td></tr>
+    <tr><td><span class="pill risk">4</span></td><td class="n">19</td><td>Comment writes; the edit write path; suggestions and their decision surface; enforcement in every handler; the soft lock; access writes and invitation acceptance; notifications; retention; standalone connect and promotion; documentation last</td><td>Comment, suggest, edit, accept, share, and read the audit trail</td></tr>
+  </tbody>
+</table></div>
+
+<h2>The dependency graph, and its longest chain</h2>
+
+<p>Three tickets have no dependencies at all and start immediately: <b>P1-A</b> (permanent ids),
+<b>P1-C</b> (the identity contract) and <b>P1-E</b> (Netlify configuration). Everything else names its
+predecessors. The graph is wide in the middle and narrow at both ends.</p>
+
+<div class="panel" style="margin:0">
+  <div class="flow">
+    <div class="node actor"><span class="nt">P1-B</span><span class="ns">placeholders</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at"></span></div>
+    <div class="node ok"><span class="nt">P1-D</span><span class="ns">anchors</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at"></span></div>
+    <div class="node ok"><span class="nt">P2-D</span><span class="ns">manifest</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at"></span></div>
+    <div class="node warn"><span class="nt">P3-E</span><span class="ns">pending</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at"></span></div>
+    <div class="node warn"><span class="nt">P4-B</span><span class="ns">edit write</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at">same file</span></div>
+    <div class="node risk"><span class="nt">P4-M &rarr; P4-N</span><span class="ns">enforce, then unify</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at"></span></div>
+    <div class="node risk"><span class="nt">P4-S &rarr; P4-R</span><span class="ns">standalone promotion</span></div>
+  </div>
+  <div class="cap">
+    <span class="key"><i class="sw ok"></i>build-time</span>
+    <span class="key"><i class="sw warn"></i>read path</span>
+    <span class="key"><i class="sw risk"></i>write path, serialized</span>
+    <span>Nine sequential hops after a root. This is the critical path.</span>
+  </div>
+</div>
+
+<p>The tail is the expensive part, and it is expensive for a reason worth stating: <b>P4-B, P4-M and
+P4-N cannot run in parallel because they share <code>edit.mjs</code> and <code>gitedit.mjs</code>.</b>
+P4-B builds the edit write path, P4-M wires capability enforcement into every existing write handler,
+and P4-N then extracts the single apply path so that accepting a suggestion and saving a direct edit
+cannot drift into two different conflict checks. Doing P4-N first would mean extracting a shared path
+from one caller, which is a guess rather than an extraction.</p>
+
+<p>A second chain of comparable length runs through sharing &mdash; P1-C &rarr; P2-B &rarr; P2-G &rarr;
+P3-H &rarr; P3-J &rarr; P4-J &rarr; P4-K and P4-L &mdash; and it is genuinely parallel to the editing
+chain, which is what phase 3 being ten wide buys.</p>
+
+<details class="dx">
+  <summary><span class="dxn">A</span>Why documentation is the last ticket rather than the first</summary>
+  <div class="dxb">
+    <p><b>P4-G</b> depends on essentially everything and is merged last. That is not neglect: it is the
+    one ticket whose cost is entirely rework if an interface moves. Documentation written against a
+    moving contract has to be rewritten each time the contract moves, and each rewrite is a chance for
+    the document and the code to disagree in a way nobody notices.</p>
+    <p>The gates that protect correctness in the meantime are mechanical rather than editorial:
+    <code>check-dist</code> rebuilds every document and fails if a committed artifact changed by one
+    byte; <code>check-function-modules</code> imports every server module without invoking anything, so
+    an unresolvable import or a missing export fails at link time rather than in production;
+    <code>check-test-inventory</code> fails when a test file exists that no CI step names, which turns
+    "added a test and forgot to wire it up" from a silent no-op into a red build.</p>
+  </div>
+</details>

@@ -1,0 +1,135 @@
+<!--
+id: api
+label: API
+summary: Fourteen functions under /api/, every one of them resolving authority through the same function and the same validator. The client reveals controls; only an endpoint grants anything.
+nav: API
+-->
+<!-- peek -->
+<div class="verdicts">
+  <div class="vc"><span class="tag ok">Read</span><h4>session · pending · threads · events · access · suggestions</h4><p>Gated on <code>canRead</code> or <code>canSeeMembers</code>.</p></div>
+  <div class="vc"><span class="tag warn">Write</span><h4>threads · edit · suggestions · suggestion · access</h4><p>Origin-checked, capability-checked, and never trusting an author field in the body.</p></div>
+  <div class="vc"><span class="tag risk">Neither</span><h4>login · logout · accept · realtime-token · retention</h4><p>Session and infrastructure. <code>retention</code> has no route at all.</p></div>
+</div>
+<!-- body -->
+
+<div class="thesis">
+  <h3>Every endpoint answers the same question with the same code before it does anything else: what may <em>this</em> person do to <em>this</em> document?</h3>
+  <p><code>resolveRole(docId, user)</code> is the sole authority, and
+  <code>validateAccessRow()</code> is the single shared check that its answer is well formed. Both exist
+  because the capability check was previously hand-copied into at least four places and the copies
+  drifted. One function, or they drift again.</p>
+</div>
+
+<h2>The route table</h2>
+
+<p>Each function declares its own path in <code>export const config</code>. There is no redirect table
+and no <code>/.netlify/functions/</code> path in use; <code>/api/*</code> is excluded from the edge gate
+because <b>every function gates itself</b>. That is a division of labour, not a hole: the edge gate
+decides who may see HTML, and it never decides who may write.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Route</th><th class="n">Methods</th><th>Takes</th><th>Returns</th><th>Requires</th></tr></thead>
+  <tbody>
+    <tr><td><code>/api/session</code></td><td class="n">GET</td><td><code>?doc=</code> six-hex</td><td><code>sub, email, name, roles, canComment, canEdit, doc, role, shared, canSuggest, canAccept, canShare, canSeeMembers</code></td><td><span class="pill warn">A session</span></td></tr>
+    <tr><td><code>/api/pending</code></td><td class="n">GET</td><td><code>?doc=</code></td><td>Map of <code>aid</code> &rarr; <code>{text, by, at, pr, via?}</code></td><td><span class="pill ok">canRead</span></td></tr>
+    <tr><td><code>/api/threads</code></td><td class="n">GET, POST</td><td><code>?doc=&amp;limit=&amp;cursor=</code>; body <code>{kind, section, anchor|title, docVersion, body}</code></td><td><code>{threads, nextCursor}</code>; <code>201 {thread}</code></td><td><span class="pill ok">canRead</span> / <span class="pill warn">canComment</span></td></tr>
+    <tr><td><code>/api/threads/:doc/:id</code></td><td class="n">POST, PATCH</td><td><code>{body}</code> to reply; <code>{status}</code> to resolve or reopen</td><td><code>{thread}</code></td><td><span class="pill warn">canComment</span> / <span class="pill warn">threadControl</span></td></tr>
+    <tr><td><code>/api/events</code></td><td class="n">GET, POST</td><td><code>?doc=&amp;month=YYYY-MM&amp;limit=&amp;after=</code>; body <code>{kind, target, docVersion, summary}</code></td><td><code>{v, docId, month, events, nextAfter}</code>; <code>201</code> the event</td><td><span class="pill risk">canSeeMembers</span> / per-kind</td></tr>
+    <tr><td><code>/api/suggestions</code></td><td class="n">GET, POST</td><td>body <code>{docId, aid, text, note, baseHash, baseText}</code></td><td>Array with <code>state: open|superseded</code>; <code>201</code> the record</td><td><span class="pill ok">canRead</span> / <span class="pill warn">canSuggest</span></td></tr>
+    <tr><td><code>/api/suggestion</code></td><td class="n">POST</td><td><code>{docId, aid, sugId, action, reason}</code></td><td><code>{receipt, pr}</code> or <code>{ok:true}</code></td><td><span class="pill risk">canAccept</span>, or be the author to withdraw</td></tr>
+    <tr><td><code>/api/edit</code></td><td class="n">POST</td><td><code>{docId, aid, text, baseHash?}</code></td><td><code>{receipt:{aid, text, by, at, pr, via:"edit"}}</code></td><td><span class="pill risk">canSuggest and canEdit</span></td></tr>
+    <tr><td><code>/api/access</code></td><td class="n">GET, POST, PATCH, DELETE</td><td><code>{doc, email|sub, role}</code> or <code>{doc, orgDefault}</code></td><td><code>{doc, orgDefault, members, invitations}</code>; <code>204</code> on write</td><td><span class="pill risk">canSeeMembers</span> / owner and <code>canShare</code></td></tr>
+    <tr><td><code>/api/access/transfer</code></td><td class="n">POST</td><td><code>{doc, sub}</code></td><td><code>204</code></td><td><span class="pill risk">Owner only</span></td></tr>
+    <tr><td><code>/api/realtime-token</code></td><td class="n">GET</td><td><code>?doc=</code></td><td><code>{token, issued, expires, capability, clientId}</code>, or <b>204</b></td><td><span class="pill ok">canRead</span></td></tr>
+    <tr><td><code>/api/login</code></td><td class="n">POST</td><td>Form: <code>email, password, next</code></td><td><code>302</code>, always</td><td><span class="pill n">Origin</span></td></tr>
+    <tr><td><code>/api/logout</code></td><td class="n">POST</td><td>&mdash;</td><td><code>302 /login/</code>, always</td><td><span class="pill n">Origin</span></td></tr>
+    <tr><td><code>/api/accept</code></td><td class="n">POST</td><td><code>{token, password}</code></td><td><code>204</code></td><td><span class="pill n">Origin</span></td></tr>
+    <tr><td><code>retention</code></td><td class="n">&mdash;</td><td>No route. <code>schedule: "@daily"</code></td><td>One log line</td><td><span class="pill n">Nothing</span></td></tr>
+  </tbody>
+</table></div>
+
+<h2>Four rules that hold across every endpoint</h2>
+
+<p><b>An author field in a request body is an impersonation attempt, not an input.</b> Several endpoints
+accept <code>author</code>, <code>email</code> and <code>name</code> in the body and discard them. Every
+actor stored anywhere comes from the session.</p>
+
+<p><b>Every mutating handler verifies the origin first.</b> The identity token is a cookie, so every POST,
+PATCH and DELETE is otherwise exposed to cross-site forgery. <code>requireOrigin(req)</code> is the first
+statement, not a middleware someone can forget to register.</p>
+
+<p><b>Failure is uninformative on purpose.</b> <code>/api/accept</code> collapses a malformed token, an
+expired token and an already-redeemed token into one identical <code>400
+{"error":"invalid-invitation"}</code>. <code>/api/suggestion</code> answers a withdrawal by a
+non-author with <code>403</code> if they can read the document and <code>404</code> if they cannot, so
+the status code never reveals that a suggestion exists.</p>
+
+<p><b>Absence is a status code, not an error.</b> With no <code>ABLY_API_KEY</code>,
+<code>/api/realtime-token</code> returns <b>204</b>. That single switch is the entire degradation story:
+a file opened from disk stops at the protocol test, an embedded copy never gets a session because the
+CSP blocks <code>/api/session</code>, and a standalone site works untouched until its owner decides
+otherwise.</p>
+
+<h2>The capability matrix</h2>
+
+<p>Five roles, and the row is what an endpoint actually checks &mdash; never the role name.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Role</th><th class="n">canRead</th><th class="n">canComment</th><th class="n">threadControl</th><th class="n">canSuggest</th><th class="n">canEdit</th><th class="n">canAccept</th><th class="n">canShare</th><th class="n">canSeeMembers</th></tr></thead>
+  <tbody>
+    <tr><td><b>owner</b></td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">any</td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">&#10003;</td></tr>
+    <tr><td><b>editor</b></td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">any</td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">&mdash;</td><td class="n">&#10003;</td></tr>
+    <tr><td><b>commenter</b></td><td class="n">&#10003;</td><td class="n">&#10003;</td><td class="n">own</td><td class="n">&#10003;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+    <tr><td><b>viewer</b></td><td class="n">&#10003;</td><td class="n">&mdash;</td><td class="n">none</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+    <tr><td><b>none</b></td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">none</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+  </tbody>
+</table></div>
+
+<p>Resolution has a fixed precedence: the bound owner subject, then an explicit grant by subject, then an
+unexpired invitation matched on the proven email, then the organisation default if the caller's email
+matches the configured domain, then <code>none</code>. Sharing is opt-in &mdash; a document with no
+access record behaves exactly as it did before roles existed, and shows no share panel. The first owner
+is captured once from the <code>DOC_OWNERS</code> environment variable on that person's first sign-in,
+by a create-only write, so ownership is not first-come and not seizable from the client.</p>
+
+<p class="note"><b><code>threadControl: "own"</code> is checked inside the compare-and-swap, not before
+it.</b> A commenter resolving somebody else's thread is refused against every fresh draft the retry loop
+reads, and denial takes precedence over the no-op shortcut &mdash; otherwise a silent <code>200</code>
+for "already resolved" would tell a non-owner the thread's current status.</p>
+
+<details class="dx">
+  <summary><span class="dxn">A</span>The edge gate, and how it learns which document it is guarding</summary>
+  <div class="dxb">
+    <p>The gate runs on <code>/*</code>, excluding <code>/login/*</code>, <code>/api/*</code> and
+    <code>/_assets/*</code>, and it passes <code>/invite/*</code> through unconditionally because
+    invitation acceptance has to be reachable before a session exists. No session redirects to
+    <code>/login/?next=</code>.</p>
+    <p>With a session, it fetches the downstream response and reads <b>only the first line of the body</b>,
+    which must match <code>&lt;meta name="doc-id" content="([0-9a-f]{6})"&gt;</code> within 96 bytes.
+    That is why <code>&#123;&#123;DOC_ID&#125;&#125;</code> is the first placeholder in <code>layout.html</code>: it lets the
+    gate identify the document without buffering the page. It then resolves the role and requires
+    <code>canRead</code>, replaying the retained bytes on success.</p>
+  </div>
+</details>
+
+<details class="dx">
+  <summary><span class="dxn">B</span>One apply path, whatever the entry point</summary>
+  <div class="dxb">
+    <p>A direct edit and an accepted suggestion reach durable state through exactly one operation, in
+    <code>netlify/lib/gitedit.mjs</code>. It owns the mode decision, the manifest, the effective base, the
+    repository write and the receipt compare-and-swap. It owns <b>no authority at all</b>: the caller has
+    already proven who the actor is and what that actor may do, and the module refuses to re-derive
+    either from a request, from public HTML, or from a document file. It imports no identity helper, no
+    functions context and no notification fan-out, and it emits no log line.</p>
+    <p>The <b>effective base</b> is the applied receipt when one exists and its <code>baseHash</code>
+    still equals the manifest row hash, otherwise the manifest hash itself. A stale receipt never becomes
+    authority. A mismatch is <code>409</code> carrying the current hash and the current text &mdash; but
+    only when that text round-trips through both converters exactly; otherwise it carries
+    <code>null</code> rather than a lossy approximation.</p>
+    <p>The GitHub side is deliberately narrow: a deterministic branch <code>docedit/&lt;docId&gt;/&lt;first
+    16 hex of sha256(sub)&gt;</code> that exposes neither the email nor the raw subject, exactly zero or
+    one open pull request per author branch, a ten-second timeout, no redirects, a two MiB response cap,
+    and a commit that replaces only the located byte range. The text's author stays the commit author;
+    the site is only the committer. It never merges, closes, labels, reviews or comments.</p>
+  </div>
+</details>

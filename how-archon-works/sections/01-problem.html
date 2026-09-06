@@ -1,0 +1,76 @@
+<!--
+id: problem
+label: The problem
+summary: A rich page always explained a system better than prose. It was never worth the effort for twelve readers. That arithmetic has inverted.
+nav: Problem
+-->
+<!-- peek -->
+<div class="thesis">
+  <p>Documents are plain text because writing anything better cost more than the audience justified.
+  That constraint is gone, and nothing else was holding the format in place.</p>
+</div>
+<!-- body -->
+
+<h2>Prose was never the best explanation. It was the affordable one</h2>
+
+<p>Markdown is good. Google Docs and Notion are good. They are fast to write, they diff, they survive
+tooling changes, and a reader with no context can open one. None of that is in dispute here, and a
+document that pretended otherwise would be arguing with the wrong thing.</p>
+
+<p>The claim is narrower and harder to escape: <b>for explaining a system, a rich HTML page beats all of
+them, and it always did.</b> A diagram that responds to a click shows a mechanism that a static picture
+can only assert. An example the reader can run answers the question the paragraph was going to raise. A
+state machine the reader can step through settles an argument that three paragraphs of prose leave open.
+Nobody has ever preferred the flat version on its merits.</p>
+
+<p>They preferred it on its cost. A rich page was a small application: a build, a bundle, a stylesheet
+that had to work in both themes, and a week of someone's attention. <b>An internal architecture document
+is read by about a dozen people.</b> A week of engineering time to serve twelve readers is not a
+defensible trade, so the flat version won every time, and the reasoning became invisible &mdash; a
+convention rather than a calculation.</p>
+
+<div class="grid2">
+  <div class="card">
+    <p class="kicker">What actually changed</p>
+    <h4>The cost of the better artifact collapsed</h4>
+    <p>An agent writes a working, theme-aware, interactive page about as fast as it writes the prose
+    describing one. The week is now an afternoon. The calculation that produced the convention no longer
+    produces the same answer.</p>
+  </div>
+  <div class="card">
+    <p class="kicker">What did not change</p>
+    <h4>The reasons prose was chosen</h4>
+    <p>Diffability, greppability, and surviving a decade all still favour text. Those are real and this
+    document does not wave them away &mdash; the Design section is largely about paying them back.</p>
+  </div>
+</div>
+
+<h2>The cost that replaced it is collaboration, not authoring</h2>
+
+<p>Removing the authoring cost exposes the cost that was hiding behind it. Google Docs is not chosen for
+its typography. It is chosen because <b>a document is a conversation</b>: somebody comments on a
+sentence, somebody else suggests a rewrite, and an owner decides. A static HTML file has none of that. It
+is a better explanation and a worse workspace, and the workspace is why teams keep reaching for the
+worse explanation.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>What a reviewer needs</th><th class="n">Markdown in a repo</th><th class="n">A hosted document</th><th class="n">A static HTML file</th></tr></thead>
+  <tbody>
+    <tr><td>Interactive explanation</td><td class="n"><span class="pill n">No</span></td><td class="n"><span class="pill n">No</span></td><td class="n"><span class="pill ok">Yes</span></td></tr>
+    <tr><td>Comment on one sentence</td><td class="n"><span class="pill warn">Only in review</span></td><td class="n"><span class="pill ok">Yes</span></td><td class="n"><span class="pill n">No</span></td></tr>
+    <tr><td>Suggest an edit in place</td><td class="n"><span class="pill warn">As a patch</span></td><td class="n"><span class="pill ok">Yes</span></td><td class="n"><span class="pill n">No</span></td></tr>
+    <tr><td>Survives being emailed</td><td class="n"><span class="pill ok">Yes</span></td><td class="n"><span class="pill n">No</span></td><td class="n"><span class="pill ok">Yes</span></td></tr>
+    <tr><td>Reviewed before it changes</td><td class="n"><span class="pill ok">Yes</span></td><td class="n"><span class="pill risk">No</span></td><td class="n"><span class="pill ok">Yes</span></td></tr>
+  </tbody>
+</table></div>
+
+<p>No column wins. That is the problem worth solving, and it is the one Archon takes on: <b>the
+right-hand column is the better artifact, and it is missing exactly two rows.</b> Adding those two rows
+without losing the two it already wins is the whole design.</p>
+
+<p class="note"><b>The honest counter-argument, stated first.</b> A page an agent writes in an afternoon
+is a page nobody has read line by line. Prose fails visibly; a broken interactive element fails by
+quietly showing the wrong thing. This is a real cost of the position and it is not fully paid off. The
+partial answer is in Design: the build refuses to emit a document with an unbalanced tag, an unfilled
+placeholder or a duplicate section id, and it prints an anchor report on every rebuild. That catches
+structure, not meaning.</p>

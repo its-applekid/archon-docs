@@ -1,0 +1,204 @@
+<!--
+id: design
+label: Design
+summary: One block identity carried across rebuilds, two deployment modes chosen by configuration and never by a request, and a storage boundary that keeps every durable word in the document rather than the database.
+nav: Design
+-->
+<!-- peek -->
+<div class="seq">
+  <div><span class="sq">1</span></div><div class="sa">Build</div><div class="sm"><b>aligns old block text against new</b><br>carries <code>data-aid</code>, or orphans it loudly</div><div class="sa">anchors.json</div>
+  <div><span class="sq">2</span></div><div class="sa">Reader</div><div class="sm"><b>selects a sentence, comments</b><br>stores block id + quote + prefix + suffix</div><div class="sa">Blobs</div>
+  <div><span class="sq">3</span></div><div class="sa">Page</div><div class="sm"><b>re-resolves on every load</b><br>exact &#183; drifted &#183; moved &#183; orphaned</div><div class="sa">Reader</div>
+</div>
+<!-- body -->
+
+<div class="thesis">
+  <h3>A comment outlives the sentence it was made about, because the build is the only participant that ever sees both versions.</h3>
+  <p>Browser anchoring libraries see one document and a stored quote. Archon has a build step that sees
+  the old block texts in <code>anchors.json</code> and the new ones in <code>sections/*.html</code>, and
+  it aligns them once, with full context and no time pressure. That is the whole reason anchoring here is
+  a solved problem rather than a heuristic.</p>
+</div>
+
+<h2>Layer 1: <code>data-aid</code> is the one block identity in the platform</h2>
+
+<p><code>anchors.ts</code> scans each section into a list of block elements, normalises their text
+(collapse whitespace, trim), and diffs that list against the previous build's list with a sequence
+matcher. A new block is minted <code>"a" + sha1(text)[:8]</code>. Everything else is carried:</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Alignment opcode</th><th>What the build does</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><code>equal</code></td><td><span class="pill ok">Carry the id</span></td><td>Same text, same block</td></tr>
+    <tr><td><code>replace</code></td><td><span class="pill warn">Carry if similarity &#8805; 0.6</span></td><td>An edited paragraph is still that paragraph</td></tr>
+    <tr><td><code>replace</code>, below 0.6</td><td><span class="pill risk">Orphan the old id</span></td><td>Orphan loudly rather than guess wrongly</td></tr>
+    <tr><td><code>delete</code></td><td><span class="pill risk">Orphan the old id</span></td><td>The block is gone</td></tr>
+    <tr><td><code>insert</code></td><td><span class="pill n">Mint a new id</span></td><td>Nothing to carry</td></tr>
+  </tbody>
+</table></div>
+
+<p>Then one move pass: an orphaned id whose exact text reappears elsewhere in the section reclaims that
+block. Sequence alignment respects order, so two similar siblings cannot swap. And <b>the build prints a
+report on every rebuild</b> &mdash; how many blocks kept an id, how many were re-anchored, how many
+moved, how many were orphaned, with the orphans named. A writer who orphans twelve threads finds out at
+the moment they do it, not when a reader complains.</p>
+
+<p>Two rejected alternatives are worth stating, because both look reasonable. An id derived from position
+&mdash; <code>sha256(doc|section|ordinal)</code>, or <code>"p:7"</code> &mdash; renumbers every block
+below an insertion, and every anchor below it silently moves. That failure is invisible, which is worse
+than being wrong loudly. A quote with no block id fails the moment somebody rewrites the quoted words,
+which is precisely the change that made the comment worth reading.</p>
+
+<h2>Layer 2: the quote, resolved in the browser, degrading in four visible states</h2>
+
+<p>An anchor stores <code>block</code>, the normalised <code>exact</code> text, up to 32 characters of
+<code>prefix</code> and <code>suffix</code>, and a <code>start</code> offset used only as a tiebreak. The
+page finds the block by <code>data-aid</code>, searches its normalised text, and scores hits by common
+affix length minus a gentle distance penalty. <b>There is no fuzzy matching</b>: it hides failure instead
+of reporting it, and it blocks the main thread on long documents with short generic quotes.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>State</th><th>Condition</th><th>What the reader sees</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill ok">exact</span></td><td>Block found, quote found</td><td>The highlight, in place</td></tr>
+    <tr><td><span class="pill warn">drifted</span></td><td>Block found, quote gone</td><td>The comment on the block, marked "text changed"</td></tr>
+    <tr><td><span class="pill warn">moved</span></td><td>Block gone, quote found in exactly one other block</td><td>The comment there, marked "moved"</td></tr>
+    <tr><td><span class="pill risk">orphaned</span></td><td>Block gone, quote absent or ambiguous</td><td>Grouped under "Not attached any more", with its quote</td></tr>
+  </tbody>
+</table></div>
+
+<p><b>Anchor state is never stored.</b> The client computes it at read time, every time. A stored state
+goes stale on the next rebuild, and the whole point of two layers is that they degrade independently.
+<code>moved</code> requires a unique hit; nothing is ever silently relocated.</p>
+
+<p>One consequence sharpens the design more than any other rule. The builder is JavaScript, so
+<code>norm()</code> and the block scanner are <b>one module compiled once and inlined into the page</b>.
+Under earlier builders this code existed twice &mdash; in Python the two whitespace sets genuinely
+differed, and in Rust they were kept in step by a CI fixture whose only job was to prove two languages
+agreed. There is now nothing to drift. This is the single largest benefit of the builder being
+JavaScript, and a client that reimplements <code>norm()</code> "for convenience" recreates the entire
+problem.</p>
+
+<details class="dx">
+  <summary><span class="dxn">A</span>What an anchor survives, exactly</summary>
+  <div class="dxb">
+    <div class="tw"><table>
+      <thead><tr><th>Change to the document</th><th class="n"><code>data-aid</code></th><th class="n">Quote</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Restyle, rewrap, change classes</td><td class="n">Keeps</td><td class="n">Keeps</td><td>Nothing changed</td></tr>
+        <tr><td>Fix a typo elsewhere in the paragraph</td><td class="n">Keeps</td><td class="n">Keeps</td><td>Nothing changed</td></tr>
+        <tr><td>Rewrite the quoted words</td><td class="n">Keeps</td><td class="n">Loses</td><td>On the block, "text changed"</td></tr>
+        <tr><td>Move the paragraph to another section</td><td class="n">Keeps</td><td class="n">Keeps</td><td>Nothing changed</td></tr>
+        <tr><td>Split one paragraph in two</td><td class="n">Loses</td><td class="n">Keeps in one half</td><td>Re-found, marked "moved"</td></tr>
+        <tr><td>Delete the paragraph</td><td class="n">Loses</td><td class="n">Loses</td><td>Orphaned, with its quote</td></tr>
+        <tr><td>Rename the document</td><td class="n">Keeps</td><td class="n">Keeps</td><td>Nothing changed &mdash; the key is the permanent id</td></tr>
+        <tr><td>Rewrite a whole section</td><td class="n">Loses</td><td class="n">Loses</td><td>Every thread orphaned. This is correct</td></tr>
+      </tbody>
+    </table></div>
+    <p>The last row is not a defect. A rewritten section is a different argument, and carrying comments
+    onto it would attach objections to sentences nobody wrote.</p>
+  </div>
+</details>
+
+<h2>Two modes, selected by configuration and never by a request</h2>
+
+<p>An edit is <b>an overlay keyed by <code>aid</code>, applied over the built HTML</b>. Promoting that
+overlay to a durable source is a separate, explicit act, and the two modes differ only in what that act
+does. An overlay replaces the contents of a block and never the block's identity, which is why editing
+cannot break anchoring; a DOM patch that rewrote block boundaries would be forbidden in both modes.</p>
+
+<div class="tw"><table>
+  <thead><tr><th></th><th>Standalone</th><th>Repository-backed</th></tr></thead>
+  <tbody>
+    <tr><td>What the host gets</td><td>One built HTML file, uploaded</td><td>A repository holding many documents</td></tr>
+    <tr><td>Source of truth for text</td><td>The file, plus the overlay</td><td><code>sections/*.html</code> in git</td></tr>
+    <tr><td>Where the block manifest lives</td><td>A private sidecar in the store, at <code>mode/&lt;docId&gt;/manifest.json</code></td><td><code>&lt;instance&gt;/dist/&lt;instance&gt;.edit.json</code>, in the deploy</td></tr>
+    <tr><td>Promotion</td><td>Owner's choice. Rewrites the file, or opens a PR once a repository is attached</td><td>A commit on a per-author branch, and one pull request per author per document</td></tr>
+    <tr><td>Who may write a direct edit</td><td><span class="pill warn">A decider only</span></td><td><span class="pill ok">Any member</span></td></tr>
+    <tr><td>Review gate</td><td>Acceptance. There is no other one</td><td>The pull request</td></tr>
+  </tbody>
+</table></div>
+
+<p><b>The mode is chosen by four environment variables and nothing else.</b> With
+<code>DOCS_REPO</code> absent and none of its three companions present, the service is standalone. With
+<code>DOCS_REPO</code> present, all of <code>DOCS_GITHUB_TOKEN</code>, <code>DOCS_BOT_EMAIL</code> and a
+valid branch must validate. <b>Partial configuration is fatal in both directions:</b> a configured
+repository never falls back to standalone, and standalone never borrows a repository value. Both produce
+a 500 with the stable code <code>invalid-state</code> rather than a quiet degradation, because the quiet
+degradation would mean writing a reader's edit somewhere nobody is reviewing.</p>
+
+<p class="note"><b>The cost of standalone mode, said plainly.</b> The overlay <em>is</em> the document,
+and nobody reviews it. That is not an oversight to be fixed later; it is what "no repository" means. It
+is also why promotion had to be built before editing rather than after, and why a direct edit in
+standalone mode is restricted to a decider while repository mode lets any member propose one.</p>
+
+<h2>The storage boundary: nothing durable is only in the database</h2>
+
+<p>State lives in Netlify Blobs, one store named <code>doc-state</code>, strong consistency,
+<b>one blob per record</b> &mdash; never a shared mutable array. Two readers appending to one array lose
+a comment; a compare-and-swap loop prevents the loss but makes every write on a document contend with
+every other write on that document, and a live review session is exactly when concurrent writes happen.
+The permanent six-hex <code>id</code> from <code>doc.json</code> is the key, never the slug and never the
+directory name, so renaming a document orphans nothing.</p>
+
+<div class="grid2">
+  <div class="card">
+    <p class="kicker">In the store</p>
+    <h4>Conversation and receipts</h4>
+    <p>Threads and comments, append-only audit events, access grants and invitations, open suggestions,
+    and the pending-edit receipt. Written through one <code>mutate()</code> helper with an ETag
+    compare-and-swap and a six-attempt backoff; append-only keys use <code>onlyIfNew</code>.</p>
+  </div>
+  <div class="card">
+    <p class="kicker">Not in the store</p>
+    <h4>The document, and anything ephemeral</h4>
+    <p>Every published word lives in the artifact and, in repository mode, in git. Presence is derived on
+    the client from heartbeats &mdash; a 20-second beat, a 50-second expiry, a <code>bye</code> on
+    <code>pagehide</code> &mdash; and is never persisted, never written to Blobs, never audited.</p>
+  </div>
+</div>
+
+<p>The pending edit is the clearest statement of the boundary. It is a receipt carrying a
+<code>baseHash</code> of the text it replaced, and <code>/api/pending</code> drops any entry whose
+<code>baseHash</code> no longer matches the deployed build's manifest. When the pull request merges and
+the site rebuilds, the hash changes and the entry disappears on its own; there is no cleanup job.
+<b>If Blobs lost everything tomorrow, no published content would be lost</b> &mdash; comments and grants
+would be, and that is the honest limit of the claim.</p>
+
+<details class="dx">
+  <summary><span class="dxn">B</span>What this storage choice rules out, and what would reverse it</summary>
+  <div class="dxb">
+    <p>Blobs has no index and no change feed, so several features are not merely unbuilt but unbuildable
+    on this substrate: no query across documents, no full-text search of comment bodies, no transaction
+    spanning two blobs, no count without a read, and no per-user index &mdash; which means no unread
+    count, no "shared with me" list and no cross-document revoke. Offboarding is deleting the identity
+    user.</p>
+    <p>Six named triggers move the decision to Postgres: a query that is no longer scoped to one
+    document; a request to search comment text; one document passing roughly 200 threads with a slow
+    first paint; sustained writes above about one per second on a single thread; a change that must span
+    two documents atomically; and per-user state that is not per-document. <b>Presence deliberately does
+    not fire the fourth trigger</b>, because a fact with a twenty-second lifetime does not belong in a
+    durable store of any kind &mdash; Postgres would not fix it either.</p>
+  </div>
+</details>
+
+<details class="dx">
+  <summary><span class="dxn">C</span>Why realtime needs a third party, and what that costs</summary>
+  <div class="dxb">
+    <p>Netlify Functions cannot hold a WebSocket: 10 seconds synchronous, 60 seconds streaming, 15
+    minutes background. Netlify Edge Functions <em>can</em> hold a stream open indefinitely, which looks
+    like the answer and is not &mdash; <b>Netlify has no fan-in.</b> No shared memory between isolates,
+    no bus, no publish-subscribe, and Blobs has no change feed, so an SSE endpoint could only poll Blobs
+    from inside the stream. That is polling with extra steps.</p>
+    <p>So the broker is mandatory rather than preferred: Ably, one channel per document, subscribed with
+    the browser's built-in <code>EventSource</code> and published with <code>fetch</code>, the token
+    minted by a function. No SDK and no script tag, which is the constraint that eliminated every
+    alternative including Ably's own client library. Cloudflare Durable Objects is the better technical
+    fit and is the named migration target, rejected for now only because it means running a Worker that
+    is otherwise unnecessary.</p>
+    <p>This is the repository's first external service dependency and its first secret. Server events
+    carry an id and a hash and <b>never text</b>, presence is never persisted, and no write path may
+    depend on the broker &mdash; so an outage is a slower document, not a broken one, and a migration is
+    one client module with no data to move.</p>
+  </div>
+</details>

@@ -1,0 +1,27 @@
+# Static publish. There is no build step in this repository.
+#
+# A real repository-backed Archon instance vendors templates/ and sets
+#     command = "templates/build --site"
+#     publish = "_site"
+# which discovers every directory holding a doc.json, builds each one, and
+# writes _site/<slug>/index.html plus a generated root index and _redirects.
+#
+# This showcase publishes the repository root instead, because its front page is
+# a hand-written splash rather than the generated document index, and because a
+# committed artifact is the point: the document you are serving is the same file
+# a reader can download and open from disk. `_redirects` reproduces the two
+# routes the site builder would have generated for this document.
+
+[build]
+  publish = "."
+
+[build.processing]
+  skip_processing = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    Cache-Control = "public, max-age=0, must-revalidate"

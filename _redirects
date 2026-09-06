@@ -1,0 +1,8 @@
+# The pretty route for the document, and its permanent-id route.
+# `templates/build --site` generates both of these; this repository publishes a
+# committed artifact instead, so they are written out by hand.
+
+/how-archon-works       /how-archon-works/dist/how-archon-works.html   200
+/how-archon-works/      /how-archon-works/dist/how-archon-works.html   200
+/d/3c7f1a               /how-archon-works/                             301
+/d/3c7f1a/*             /how-archon-works/                             301

@@ -1,0 +1,81 @@
+<!--
+id: solution
+label: The solution
+summary: Build one self-contained HTML file, then let a hosted layer add sign-in, comments, suggestions, edits, roles, history and presence on top of it without touching the file.
+nav: Solution
+-->
+<!-- peek -->
+<div class="panel" style="margin:0">
+  <div class="flow">
+    <div class="node actor"><span class="nt">sections/*.html</span><span class="ns">source, in git</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at">templates/build</span></div>
+    <div class="node ok"><span class="nt">One HTML file</span><span class="ns">CSS and JS inlined</span></div>
+    <div class="arrow"><span class="al">&rarr;</span><span class="at">served, not rebuilt</span></div>
+    <div class="node warn"><span class="nt">Live layer</span><span class="ns">/api/* &#183; only when hosted</span></div>
+  </div>
+  <div class="cap">
+    <span class="key"><i class="sw ok"></i>works with no network</span>
+    <span class="key"><i class="sw warn"></i>needs a host and a session</span>
+    <span>Everything to the right of the file is additive. Remove it and the document still reads.</span>
+  </div>
+</div>
+<!-- body -->
+
+<div class="thesis">
+  <h3>The document is a static file. The collaboration is a layer that attaches to it at runtime.</h3>
+  <p>One build produces <b>one HTML file with every stylesheet and script inlined</b> and no external
+  request except a font. It opens from <code>file://</code>, it survives being emailed, and it can be
+  published anywhere that serves bytes. When that same file is served by an Archon site, client modules
+  in it call <code>/api/*</code>, find a session, and reveal comments, suggestions, inline editing,
+  roles, history and presence.</p>
+  <div class="verdicts">
+    <div class="vc"><span class="tag ok">Always</span><h4>The text and the interaction</h4><p>Inlined at build time. No host, no session and no network required.</p></div>
+    <div class="vc"><span class="tag warn">When hosted</span><h4>Comments, edits, roles</h4><p>Revealed by a session, enforced by a function. Absent everywhere else.</p></div>
+    <div class="vc"><span class="tag risk">Optional</span><h4>Presence and realtime</h4><p>Needs a third-party broker. With no key the endpoint returns 204 and the feature simply is not there.</p></div>
+  </div>
+</div>
+
+<h2>Degradation is the design, not the fallback</h2>
+
+<p>Each layer is inlined into the artifact by its own placeholder in <code>layout.html</code>, and an
+absent asset contributes <b>zero bytes</b> &mdash; not an empty wrapper, not a blank line. A document
+built with no features is byte-for-byte the document that existed before the feature slots were added.
+That property is what makes the additive claim checkable rather than aspirational.</p>
+
+<div class="bands">
+  <div class="band ok"><span class="rng">file://</span><span class="act">Read it<em>every diagram, every table, both themes</em></span><span class="pill ok">works</span></div>
+  <div class="band warn"><span class="rng">hosted, no session</span><span class="act">Read it<em>the gate decides who sees HTML at all</em></span><span class="pill warn">gated</span></div>
+  <div class="band warn"><span class="rng">hosted, signed in</span><span class="act">Comment, suggest, edit, share<em>role-checked on every write</em></span><span class="pill ok">full</span></div>
+  <div class="band risk"><span class="rng">no broker key</span><span class="act">No presence, no live events<em>refresh instead</em></span><span class="pill risk">absent</span></div>
+</div>
+
+<p>The client contract is one mechanism, not four. <code>session.js</code> calls
+<code>/api/session</code> once and sets <code>data-session</code> on the root element; CSS reveals
+controls; every other module listens for a <code>session</code> event and nothing polls.
+<b><code>data-session</code> is a rendering hint and never a security control.</b> A reader can set it
+in the developer tools and make an edit button appear. The button calls a function, the function
+resolves the caller's real role, and the function returns 403.</p>
+
+<h2>What this buys that a hosted document does not</h2>
+
+<div class="grid2">
+  <div class="card">
+    <p class="kicker">Against Markdown</p>
+    <h4>The explanation is an application</h4>
+    <p>Interactive diagrams and runnable examples live in the artifact, hand-built from the template's
+    components. No diagram library: it would render one fixed theme, could not be checked before
+    publishing, and needs a script the CSP blocks.</p>
+  </div>
+  <div class="card">
+    <p class="kicker">Against a hosted document</p>
+    <h4>The text stays reviewable</h4>
+    <p>In repository mode an accepted edit becomes a commit on a branch and a pull request against
+    <code>sections/*.html</code>. The document changes the way code changes, and the copy on your laptop
+    is a real copy rather than a stale export.</p>
+  </div>
+</div>
+
+<p class="note"><b>Where this is weakest.</b> In standalone mode there is no repository, so the overlay
+<em>is</em> the document and nobody reviews it. That is the price of having no repository, and it is why
+export-back had to be built before editing rather than after. Design says how both modes work and what
+each one gives up.</p>

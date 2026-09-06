@@ -1,0 +1,17 @@
+{
+  "id": "3c7f1a",
+  "slug": "how-archon-works",
+  "aliases": [],
+  "title": "How Archon Works",
+  "eyebrow": "Archon · Example document",
+  "status": "Living document",
+  "heading": "The plain-text document is now the expensive one",
+  "lede": "An architecture document about Archon, built with Archon. The page you are reading is the artifact the argument is about: one self-contained HTML file that gains sign-in, anchored comments, inline edits and presence at runtime, and loses none of it when you save it to disk.",
+  "meta": {
+    "Subject": "Archon itself",
+    "Source": "github.com/aiur-team/archon",
+    "Built by": "templates/build",
+    "Permanent link": "/d/3c7f1a"
+  },
+  "footer": "How Archon Works · /d/3c7f1a · built by templates/build from github.com/aiur-team/archon"
+}
