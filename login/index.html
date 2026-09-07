@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.5;
+        background: #f5f6f8;
+        color: #1c1c1c;
+      }
+      .login-shell {
+        box-sizing: border-box;
+        max-width: 24rem;
+        margin: 8vh auto 0;
+        padding: 2rem;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+      }
+      h1 {
+        margin: 0 0 1rem;
+        font-size: 1.5rem;
+        text-align: center;
+      }
+      label {
+        display: block;
+        margin: 1rem 0 0.25rem;
+        font-weight: 600;
+      }
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0.5rem 0.625rem;
+        font: inherit;
+        border: 1px solid #9aa0a6;
+        border-radius: 4px;
+      }
+      button {
+        margin-top: 1.25rem;
+        width: 100%;
+        padding: 0.625rem 1rem;
+        font: inherit;
+        font-weight: 600;
+        color: #ffffff;
+        background: #1a5fb4;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      input:focus-visible,
+      button:focus-visible {
+        outline: 2px solid #1a5fb4;
+        outline-offset: 2px;
+      }
+      #login-error {
+        margin: 0 0 0.25rem;
+        padding: 0.5rem 0.625rem;
+        color: #8a1f11;
+        background: #ffece8;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="login-shell">
+      <h1>Sign in</h1>
+      <form method="post" action="/api/login">
+        <input type="hidden" name="next" value="/">
+        <div id="login-error" role="alert" hidden>Sign-in failed. Check your details and try again.</div>
+        <label for="login-email">Email</label>
+        <input id="login-email" name="email" type="email" autocomplete="username" required>
+        <label for="login-password">Password</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+    </main>
+    <script>
+      (function () {
+        // Netlify's default recovery email links at the site root with
+        // `#recovery_token=…`. An anonymous root request is redirected here by
+        // the edge gate, and a 302 whose Location carries no fragment leaves
+        // the original fragment in place, so the token arrives on this page.
+        // Hand it to /invite/ before anything else runs: the token is never
+        // decoded, copied into the DOM, stored or logged, and replace() keeps
+        // the token-bearing login URL out of session history. Any other hash,
+        // including a malformed one, falls through to the login behavior
+        // below unchanged.
+        var recovery = location.hash.match(/^#recovery_token=([A-Za-z0-9._~-]{20,4096})$/);
+        if (recovery) {
+          location.replace("/invite/" + location.hash);
+          return;
+        }
+
+        const params = new URLSearchParams(location.search);
+        const nextValue = params.get("next");
+        if (nextValue !== null && nextValue !== "") {
+          document.querySelector('input[name="next"]').value = nextValue;
+        }
+        const errorValue = params.get("error");
+        if (errorValue === "1") {
+          document.getElementById("login-error").hidden = false;
+        }
+      })();
+    </script>
+  </body>
+</html>
