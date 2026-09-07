@@ -1,0 +1,87 @@
+functionsDirectory = "/tmp/claude-1000/ad-copy/netlify/functions"
+functionsDirectoryOrigin = "ui"
+headersOrigin = "config"
+plugins = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "/tmp/claude-1000/ad-copy"
+publishOrigin = "config"
+commandOrigin = "ui"
+command = "templates/build --site"
+functions = "/tmp/claude-1000/ad-copy/netlify/functions"
+
+[build.environment]
+
+[build.processing]
+skip_processing = true
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[headers]]
+for = "/*"
+
+[headers.values]
+X-Content-Type-Options = "nosniff"
+Referrer-Policy = "strict-origin-when-cross-origin"
+X-Frame-Options = "SAMEORIGIN"
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[redirects]]
+from = "/how-archon-works"
+to = "/how-archon-works/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/how-archon-works/"
+to = "/how-archon-works/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/d/3c7f1a"
+to = "/how-archon-works/"
+status = 301.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/d/3c7f1a/*"
+to = "/how-archon-works/"
+status = 301.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
