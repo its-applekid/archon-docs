@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Archon — Always-on Architecture Docs</title>
+<title>Archon</title>
 <meta name="description" content="Always-on Architecture Docs. Level up Claude Artifacts with auth, editing, and collaboration.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,6 +22,7 @@
     --hairline: rgba(42, 37, 26, 0.12);
     --pill-bd: rgba(42, 37, 26, 0.16);
     --pill-bg: rgba(42, 37, 26, 0.035);
+    --line: rgba(42, 37, 26, 0.17);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -28,6 +33,7 @@
       --hairline: rgba(221, 226, 235, 0.10);
       --pill-bd: rgba(221, 226, 235, 0.13);
       --pill-bg: rgba(221, 226, 235, 0.03);
+      --line: rgba(221, 226, 235, 0.14);
     }
   }
 
@@ -62,6 +68,9 @@
     letter-spacing: 0.02em;
     color: var(--muted);
   }
+  /* `display: flex` above outranks the user-agent's `[hidden] { display: none }`,
+     so the hidden attribute needs restating or a dismissed banner stays on screen. */
+  .banner[hidden] { display: none; }
   .banner b { font-weight: 500; color: var(--fg); }
   .banner a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .banner a:hover { text-decoration-thickness: 2px; }
@@ -87,12 +96,41 @@
   .banner-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .stage {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: clamp(28px, 8vh, 72px) clamp(20px, 6vw, 56px);
+    overflow: clip;
+  }
+
+  /* The flow field is decoration: it sits under every piece of content and
+     never takes a click, so the CTA and the banner above it stay live. */
+  #field {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    /* fade the diagonals out into the page floor */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 220px), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 220px), transparent 100%);
+  }
+  .stage > *:not(#field) { position: relative; z-index: 1; }
+
+  .lockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 2.2vw, 26px);
+  }
+  .lockup .logo {
+    height: clamp(70px, 15vw, 150px);
+    width: auto;
+    display: block;
   }
 
   .wordmark {
@@ -184,19 +222,24 @@
   </aside>
 
   <main class="stage">
-  <h1 class="wordmark">ARCHON</h1>
-  <p class="tagline">Always-on Architecture Docs</p>
+  <canvas id="field" aria-hidden="true"></canvas>
 
-  <div class="rule" role="presentation"></div>
+  <div class="lockup">
+    <img class="logo keepout" src="assets/aiur-logo.png" alt="" width="1215" height="1068">
+    <h1 class="wordmark keepout">ARCHON</h1>
+  </div>
+  <p class="tagline keepout">Always-on Architecture Docs</p>
 
-  <p class="what">Level up <span class="hl">Claude Artifacts</span> with auth, editing, and collaboration.</p>
+  <div class="rule keepout" role="presentation"></div>
 
-  <a class="cta" href="how-archon-works/">
+  <p class="what keepout">Level up <span class="hl">Claude Artifacts</span> with auth, editing, and collaboration.</p>
+
+  <a class="cta keepout" href="how-archon-works/">
     Read the example document
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
   </a>
 
-  <p class="aside">built with <a href="https://github.com/aiur-team/archon">aiur-team/archon</a></p>
+  <p class="aside keepout">built with <a href="https://github.com/aiur-team/archon">aiur-team/archon</a></p>
   </main>
 
 <script>
@@ -218,6 +261,203 @@
       el.hidden = true;
       try { localStorage.setItem(KEY, "1"); } catch (error) { /* dismissal is then per-page-load */ }
     });
+  })();
+</script>
+
+<script>
+  /* Diagonal flow field behind the splash, bending around the lockup and the
+     copy. Ported from the Aiur site's TypeScript module to plain script,
+     because this page has no build step and must not grow one.
+     It is pure decoration: the canvas takes no pointer events, sits at z-index
+     0 under every element, and carries no meaning a reader would miss. */
+  (function () {
+    var canvas = document.getElementById("field");
+    var stage = document.querySelector(".stage");
+    var ctx = canvas ? canvas.getContext("2d") : null;
+    if (!canvas || !stage || !ctx) return;
+
+    var ANGLE = -118 * (Math.PI / 180); // direction of the lines
+    var dir = { x: Math.cos(ANGLE), y: Math.sin(ANGLE) };
+    var nrm = { x: -dir.y, y: dir.x }; // perpendicular (spacing axis)
+    var SPACING = 23; // px between lines
+    var STEP = 7; // sampling step along a line
+    var GAP = 9; // clearance kept around the content
+
+    var W = 0, H = 0, DPR = 1;
+    var lines = [];
+    var obstacles = [];
+    var progress = 1; // entrance progress 0..1
+
+    var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function roundRectSDF(px, py, ob) {
+      var qx = Math.abs(px - ob.cx) - (ob.hx - ob.r);
+      var qy = Math.abs(py - ob.cy) - (ob.hy - ob.r);
+      var ax = Math.max(qx, 0);
+      var ay = Math.max(qy, 0);
+      return Math.sqrt(ax * ax + ay * ay) + Math.min(Math.max(qx, qy), 0) - ob.r;
+    }
+
+    function pointHidden(p) {
+      for (var i = 0; i < obstacles.length; i++) {
+        if (roundRectSDF(p.x, p.y, obstacles[i]) < GAP) return true;
+      }
+      return false;
+    }
+
+    function buildObstacles() {
+      obstacles = [];
+      var crect = canvas.getBoundingClientRect();
+      var els = document.querySelectorAll(".keepout");
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var r = el.getBoundingClientRect();
+        if (!r.width) continue;
+        var isLogo = el.classList.contains("logo");
+        var padX = isLogo ? 3 : 9;
+        var padY = isLogo ? 1 : 6;
+        var hx = r.width / 2 + padX;
+        var hy = r.height / 2 + padY;
+        obstacles.push({
+          cx: r.left - crect.left + r.width / 2,
+          cy: r.top - crect.top + r.height / 2,
+          hx: hx,
+          hy: hy,
+          r: Math.min(hx, hy) * (isLogo ? 0.95 : 0.55)
+        });
+      }
+    }
+
+    function buildLines() {
+      lines = [];
+      if (!W || !H) return;
+      var cx = W / 2;
+      var cy = H / 2;
+      var diag = Math.sqrt(W * W + H * H);
+      var half = diag / 2 + SPACING;
+      var nLines = Math.ceil(diag / SPACING) + 2;
+      for (var i = -nLines; i <= nLines; i++) {
+        var off = i * SPACING;
+        var ax = cx + nrm.x * off;
+        var ay = cy + nrm.y * off;
+        var pts = [];
+        for (var t = -half; t <= half; t += STEP) {
+          var p = { x: ax + dir.x * t, y: ay + dir.y * t, on: true };
+          p.on = !pointHidden(p);
+          pts.push(p);
+        }
+        lines.push({ pts: pts, key: ax + ay, t: 0 });
+      }
+      var mn = Infinity, mx = -Infinity;
+      for (var j = 0; j < lines.length; j++) {
+        if (lines[j].key < mn) mn = lines[j].key;
+        if (lines[j].key > mx) mx = lines[j].key;
+      }
+      var span = mx - mn || 1;
+      for (var k = 0; k < lines.length; k++) lines[k].t = (lines[k].key - mn) / span;
+    }
+
+    function lineColor() {
+      return getComputedStyle(document.body).getPropertyValue("--line").trim();
+    }
+
+    function draw() {
+      if (!W) return;
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = lineColor();
+      ctx.lineWidth = 1;
+      ctx.lineCap = "round";
+      var STAG = 0.32; // fraction of the timeline used to stagger the lines
+      for (var i = 0; i < lines.length; i++) {
+        var L = lines[i];
+        var local = (progress - L.t * STAG) / (1 - STAG);
+        local = local < 0 ? 0 : local > 1 ? 1 : local;
+        if (local <= 0) continue;
+        ctx.globalAlpha = local;
+        ctx.beginPath();
+        var pen = false;
+        for (var j = 0; j < L.pts.length; j++) {
+          var p = L.pts[j];
+          if (!p.on) { pen = false; continue; }
+          if (!pen) { ctx.moveTo(p.x, p.y); pen = true; }
+          else { ctx.lineTo(p.x, p.y); }
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function resize() {
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      W = stage.clientWidth;
+      H = stage.clientHeight;
+      if (!W || !H) return;
+      canvas.width = W * DPR;
+      canvas.height = H * DPR;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      buildObstacles();
+      buildLines();
+      draw();
+    }
+
+    function rebuild() {
+      buildObstacles();
+      buildLines();
+      draw();
+    }
+
+    function runEntrance() {
+      var startTs = null;
+      var DUR = 1500;
+      progress = 0;
+      requestAnimationFrame(function frame(ts) {
+        if (startTs === null) startTs = ts;
+        var e = (ts - startTs) / DUR;
+        progress = e >= 1 ? 1 : 1 - Math.pow(1 - e, 3); // easeOutCubic
+        draw();
+        if (e < 1) requestAnimationFrame(frame);
+      });
+    }
+
+    var started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      resize();
+      /* A reader who asked for reduced motion gets the finished field drawn in
+         one pass rather than the staggered entrance. */
+      if (motionQuery.matches) {
+        progress = 1;
+        draw();
+      } else {
+        runEntrance();
+      }
+    }
+
+    // Fonts shift the wordmark's metrics, which moves a keep-out box.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(rebuild).catch(function () { /* metrics stay as measured */ });
+    }
+
+    // The stage resizes when the viewport changes and when the banner is
+    // dismissed, so observe the element rather than only the window.
+    var rzTimer = 0;
+    function scheduleResize() {
+      clearTimeout(rzTimer);
+      rzTimer = setTimeout(resize, 120);
+    }
+    if (window.ResizeObserver) {
+      new ResizeObserver(scheduleResize).observe(stage);
+    } else {
+      window.addEventListener("resize", scheduleResize);
+    }
+
+    // Follow a live theme switch: the line colour is a themed token.
+    if (darkQuery.addEventListener) darkQuery.addEventListener("change", draw);
+
+    window.addEventListener("load", start);
+    if (document.readyState === "complete") start();
   })();
 </script>
 </body>
