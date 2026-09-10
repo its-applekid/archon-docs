@@ -236,14 +236,8 @@
   }
   .copy.copied .copy-status { opacity: 1; transform: translate(-50%, 0); }
 
-  .rule {
-    width: min(420px, 62%);
-    height: 1px;
-    margin: clamp(30px, 6vh, 54px) 0;
-    background: var(--hairline);
-  }
-
   .what {
+    margin-top: clamp(30px, 6vh, 54px);
     max-width: 34ch;
     text-wrap: balance;
     font-size: clamp(18px, 2.7vw, 25px);
@@ -316,8 +310,6 @@
     <img class="logo keepout" src="assets/aiur-logo.png" alt="" width="1215" height="1068">
     <h1 class="wordmark keepout" aria-label="ARCHON"><span aria-hidden="true">A</span><span aria-hidden="true">R</span><span aria-hidden="true">C</span><span aria-hidden="true">H</span><span aria-hidden="true">O</span><span aria-hidden="true">N</span></h1>
   </div>
-
-  <div class="rule keepout" role="presentation"></div>
 
   <p class="what keepout"><span class="hl">Claude Artifacts</span> merged with auth, editing, and live collaboration.</p>
 
