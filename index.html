@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archon</title>
-<meta name="description" content="Always-on Architecture Docs. Level up Claude Artifacts with auth, editing, and collaboration.">
+<meta name="description" content="Claude Artifacts merged with auth, editing, and live collaboration.">
+<link rel="alternate" type="text/markdown" href="/AGENTS.md" title="Instructions for agents">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -139,16 +140,101 @@
     line-height: 0.9;
     letter-spacing: 0.01em;
     color: var(--fg);
+    display: flex;
+  }
+  /* Each letter rises in on its own, a beat apart, the way the Aiur wordmark
+     does. The transform never changes layout, so the keep-out box the flow
+     field measures is the same before, during and after the entrance. */
+  .wordmark span {
+    display: inline-block;
+    transform: translateY(18px);
+    opacity: 0;
+    animation: rise 0.7s cubic-bezier(.2,.85,.3,1) forwards;
+  }
+  .wordmark span:nth-child(1) { animation-delay: .35s; }
+  .wordmark span:nth-child(2) { animation-delay: .45s; }
+  .wordmark span:nth-child(3) { animation-delay: .55s; }
+  .wordmark span:nth-child(4) { animation-delay: .65s; }
+  .wordmark span:nth-child(5) { animation-delay: .75s; }
+  .wordmark span:nth-child(6) { animation-delay: .85s; }
+  @keyframes rise {
+    to { transform: translateY(0); opacity: 1; }
   }
 
-  .tagline {
-    margin-top: clamp(16px, 3vh, 26px);
+  /* One copyable line, in the shape of the Aiur install box: a bordered pill
+     holding the prompt a person pastes into their agent, and a copy button.
+     There is one line and no package-manager tabs, so no tab strip. */
+  .prompt-hint {
+    margin-top: clamp(26px, 5vh, 44px);
     font-family: "JetBrains Mono", ui-monospace, monospace;
-    font-size: clamp(13px, 2vw, 18px);
-    letter-spacing: 0.1em;
-    text-transform: lowercase;
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
     color: var(--muted);
   }
+  .install-box {
+    display: flex;
+    align-items: stretch;
+    max-width: 100%;
+    margin-top: 10px;
+    border: 1px solid var(--pill-bd);
+    background: var(--pill-bg);
+    border-radius: 11px;
+    backdrop-filter: blur(3px);
+  }
+  .install {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 11px 10px 11px 18px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: clamp(12.5px, 1.6vw, 14px);
+    color: var(--fg);
+    text-align: left;
+  }
+  .install .prompt { color: var(--accent); flex: none; }
+  .install .cmd {
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+  }
+  .install .copy {
+    flex: none;
+    position: relative;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    transition: background-color .2s, color .2s;
+  }
+  .install .copy:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 9%, transparent); }
+  .install .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .install .copy svg { width: 15px; height: 15px; }
+  .install .copy.copied { color: var(--accent); }
+  /* "Copied" is announced to a screen reader and shown as a small label above
+     the button, so the confirmation is not colour alone. */
+  .copy-status {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translate(-50%, 4px);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--fg);
+    color: var(--bg);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .copy.copied .copy-status { opacity: 1; transform: translate(-50%, 0); }
 
   .rule {
     width: min(420px, 62%);
@@ -210,7 +296,9 @@
   .aside a:hover { color: var(--fg); }
 
   @media (prefers-reduced-motion: reduce) {
-    .cta, .cta svg { transition: none; }
+    .cta, .cta svg, .install .copy, .copy-status { transition: none; }
+    /* show the wordmark at once instead of leaving the letters hidden */
+    .wordmark span { animation: none; opacity: 1; transform: none; }
   }
 </style>
 </head>
@@ -226,21 +314,78 @@
 
   <div class="lockup">
     <img class="logo keepout" src="assets/aiur-logo.png" alt="" width="1215" height="1068">
-    <h1 class="wordmark keepout">ARCHON</h1>
+    <h1 class="wordmark keepout" aria-label="ARCHON"><span aria-hidden="true">A</span><span aria-hidden="true">R</span><span aria-hidden="true">C</span><span aria-hidden="true">H</span><span aria-hidden="true">O</span><span aria-hidden="true">N</span></h1>
   </div>
-  <p class="tagline keepout">Always-on Architecture Docs</p>
 
   <div class="rule keepout" role="presentation"></div>
 
-  <p class="what keepout">Level up <span class="hl">Claude Artifacts</span> with auth, editing, and collaboration.</p>
+  <p class="what keepout"><span class="hl">Claude Artifacts</span> merged with auth, editing, and live collaboration.</p>
+
+  <p class="prompt-hint keepout" id="prompt-hint">tell your agent:</p>
+  <div class="install-box keepout" role="group" aria-labelledby="prompt-hint">
+    <div class="install">
+      <span class="prompt" aria-hidden="true">&gt;</span>
+      <span class="cmd" id="agentPrompt">Turn my artifact into an Archon doc: https://archon.aiur.team</span>
+      <button class="copy" id="copyBtn" type="button" aria-label="Copy the prompt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="11" height="11" rx="2.2"></rect>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+        </svg>
+        <span class="copy-status" role="status" aria-live="polite" id="copyStatus"></span>
+      </button>
+    </div>
+  </div>
 
   <a class="cta keepout" href="how-archon-works/">
     Read the example document
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
   </a>
 
+  <p class="aside keepout">for agents: <a href="/AGENTS.md">AGENTS.md</a> &middot; <a href="/skills/archon-doc/SKILL.md">SKILL.md</a></p>
   <p class="aside keepout">built with <a href="https://github.com/aiur-team/archon">aiur-team/archon</a></p>
   </main>
+
+<script>
+  /* Copy the agent prompt. The text copied is the exact content of the line on
+     the page, so the two cannot disagree. When the clipboard API is refused
+     (no secure context, or permission denied) the line is selected instead so
+     a keyboard copy still works, and no "Copied" is claimed. */
+  (function () {
+    var btn = document.getElementById("copyBtn");
+    var line = document.getElementById("agentPrompt");
+    var status = document.getElementById("copyStatus");
+    if (!btn || !line || !status) return;
+
+    var timer = 0;
+    function confirm() {
+      btn.classList.add("copied");
+      status.textContent = "Copied";
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        btn.classList.remove("copied");
+        status.textContent = "";
+      }, 1300);
+    }
+    function selectLine() {
+      try {
+        var range = document.createRange();
+        range.selectNodeContents(line);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (error) { /* nothing more to offer */ }
+    }
+
+    btn.addEventListener("click", function () {
+      var text = line.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(confirm, selectLine);
+      } else {
+        selectLine();
+      }
+    });
+  })();
+</script>
 
 <script>
   /* The banner ships hidden and is revealed only once we know it was not

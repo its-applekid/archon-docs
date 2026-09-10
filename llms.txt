@@ -1,0 +1,14 @@
+# Archon
+
+> Archon turns a document into one self-contained HTML file that also works as a hosted, commentable page.
+
+## Start here
+
+- [Instructions for agents](https://archon.aiur.team/AGENTS.md): what to do, step by step
+- [The archon-doc skill](https://archon.aiur.team/skills/archon-doc/SKILL.md): the complete instruction set
+- [Example document](https://archon.aiur.team/how-archon-works/): an Archon document about how Archon works
+- [Source](https://github.com/aiur-team/archon): the builder and the skill
+
+## The prompt a person uses
+
+    Turn my artifact into an Archon doc: https://archon.aiur.team
