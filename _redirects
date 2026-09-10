@@ -6,3 +6,8 @@
 /how-archon-works/      /how-archon-works/index.html                   200
 /d/3c7f1a               /how-archon-works/                             301
 /d/3c7f1a/*             /how-archon-works/                             301
+
+# The agent skill is served from its source in aiur-team/archon, so the copy
+# an agent reads here can never drift from the one in the repository. This
+# repository has no build step in which to copy the file at build time.
+/skills/archon-doc/SKILL.md  https://raw.githubusercontent.com/aiur-team/archon/main/skills/archon-doc/SKILL.md  200
