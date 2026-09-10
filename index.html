@@ -166,6 +166,10 @@
      There is one line and no package-manager tabs, so no tab strip. */
   .prompt-hint {
     margin-top: clamp(26px, 5vh, 44px);
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise 0.7s cubic-bezier(.2,.85,.3,1) both;
+    animation-delay: 1.02s;
     font-family: "JetBrains Mono", ui-monospace, monospace;
     font-size: 12.5px;
     letter-spacing: 0.04em;
@@ -176,6 +180,10 @@
     align-items: stretch;
     max-width: 100%;
     margin-top: 10px;
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise 0.7s cubic-bezier(.2,.85,.3,1) both;
+    animation-delay: 1.10s;
     border: 1px solid var(--pill-bd);
     background: var(--pill-bg);
     border-radius: 11px;
@@ -238,6 +246,10 @@
 
   .what {
     margin-top: clamp(30px, 6vh, 54px);
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise 0.7s cubic-bezier(.2,.85,.3,1) both;
+    animation-delay: .95s;
     max-width: 34ch;
     text-wrap: balance;
     font-size: clamp(18px, 2.7vw, 25px);
@@ -253,6 +265,10 @@
     align-items: center;
     gap: 13px;
     margin-top: clamp(30px, 6vh, 52px);
+    opacity: 0;
+    transform: translateY(18px);
+    animation: rise 0.7s cubic-bezier(.2,.85,.3,1) both;
+    animation-delay: 1.18s;
     padding: 13px 20px 13px 24px;
     border: 1px solid var(--pill-bd);
     border-radius: 11px;
@@ -293,6 +309,7 @@
     .cta, .cta svg, .install .copy, .copy-status { transition: none; }
     /* show the wordmark at once instead of leaving the letters hidden */
     .wordmark span { animation: none; opacity: 1; transform: none; }
+    .what, .prompt-hint, .install-box, .cta { animation: none; opacity: 1; transform: none; }
   }
 </style>
 </head>
